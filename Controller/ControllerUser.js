@@ -281,12 +281,19 @@ const UpdatePassword  =async(req,res=response) =>{
 
 const getProductos=async(req,res=response) =>{
 
+    try {
+        
     const query = await pool.query("SELECT * FROM productos")
     
     res.status(201).json({
         ok:true,
         result:query
     })
+    } catch (error) {
+        res.status(401).json({
+            ok:false
+        })   
+    }
 
 }
 
