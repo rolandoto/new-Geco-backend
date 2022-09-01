@@ -4,6 +4,7 @@ const bcryptjs = require('bcryptjs')
 const {GeneratJTW} = require('../helpers/Jwt')
 const btoa = require('btoa')
 const fetch = require("node-fetch")
+const { pool } = require('../database/connection')
 
 const LoginUsuario =async(req,res=response) =>{
 
@@ -278,4 +279,16 @@ const UpdatePassword  =async(req,res=response) =>{
         })
     }
 }
-module.exports ={LoginUsuario,createRegister,uploadImage,GetProduct,ValidTokenUser,UpdatePassword}
+
+const getProductos=async(req,res=response) =>{
+
+    const query = await pool.query("SELECT * FROM productos")
+    
+    res.status(201).json({
+        ok:true,
+        result:query
+    })
+
+}
+
+module.exports ={LoginUsuario,createRegister,uploadImage,GetProduct,ValidTokenUser,UpdatePassword,getProductos}
