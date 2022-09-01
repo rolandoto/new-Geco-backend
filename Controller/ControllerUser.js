@@ -9,7 +9,7 @@ const { pool } = require('../database/connection')
 const userLogin =async(req,res=response) =>{
 
     const {email,password} = req.body
-
+    //rolando
     try {   
 
         const Islogin =  await usuario.findOne({email})
