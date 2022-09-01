@@ -12,7 +12,7 @@ const userLogin =async(req,res=response) =>{
 
     try {   
 
-        const Islogin =  await user.findOne({email})
+        const Islogin =  await usuario.findOne({email})
 
         if(!Islogin){
             return res.status(401).json({
@@ -21,7 +21,7 @@ const userLogin =async(req,res=response) =>{
             })
         }
 
-        const passs = await user.findOne({password})
+        const passs = await usuario.findOne({password})
 
         if(!passs){
             return res.status(201).json({
@@ -37,7 +37,9 @@ const userLogin =async(req,res=response) =>{
         })
         
     } catch (error) {
-        
+        res.status(401).json({
+            ok:false
+        })
     }
 }
 
