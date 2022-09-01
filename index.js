@@ -21,4 +21,3 @@ dbConnection()
 app.listen(port,() =>{
     console.log('server connect prot 4000')
 })
-
