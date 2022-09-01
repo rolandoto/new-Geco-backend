@@ -6,7 +6,14 @@ const { ValidarCampos } = require('../middleweres/middleaweares')
 
 const router = Router()
 
-router.post("/login",userLogin)
+router.post('/login',
+    [
+        check('email','el numbers es obligatorio').not().isEmpty(),
+        check('passowrd','el passwordone es obligatorio').not().isEmpty(),
+        ValidarCampos
+    ],
+
+    userLogin)
 
 router.post('/register',
     [
