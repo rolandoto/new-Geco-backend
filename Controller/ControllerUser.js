@@ -1,281 +1,232 @@
-const {response} = require('express')
-const usuario = require('../Model/Usuario')
-const bcryptjs = require('bcryptjs')
-const {GeneratJTW} = require('../helpers/Jwt')
-const btoa = require('btoa')
-const fetch = require("node-fetch")
+const {response} = require("express")
+const { pool } = require("../database/connection")
+const user = require("../Model/Usuario")
 
-const LoginUsuario =async(req,res=response) =>{
+const userRegister =async(req,res=response) =>{
 
-    const {numbers,passwordone} = req.body
-    
-    try {
-        
-        const isLogin  = await usuario.findOne({numbers})
-        
-        if(!isLogin){
-            return res.status(401).json({
+    const {email} =req.body
+
+        try {   
+
+            const Email = await user.findOne({email})
+
+            if(Email){
+                return res.status(401).json({
+                    ok:false,
+                    msg:"elija otro email"
+                })
+            }
+
+            let register =  user(req.body)
+
+            const result = await register.save()
+            
+            res.status(201).json({
+                ok:true,
+                result
+            })
+            
+        } catch (error) {
+            res.status(201).json({
                 ok:false,
-                msg:"el usuario no esta registrado"
             })
         }
-        
-        const validPassword = bcryptjs.compareSync(passwordone,isLogin.passwordone)
-        
-        if(!validPassword){
+}
+
+const userLogin =async(req,res=response) =>{
+
+    const {email,password} = req.body
+
+    try {   
+
+        const Islogin =  await user.findOne({email})
+
+        if(!Islogin){
             return res.status(401).json({
                 ok:false,
-                msg:"password incorrecto"
+                msg:"correo no retgistrado"
             })
         }
 
-        const token = await GeneratJTW(isLogin.id,isLogin.email)
+        const passs = await user.findOne({password})
 
-        return res.status(201).json({
-            ok:true,
-            token:token
-        })
-
-    } catch (error) {
-        res.status(401).json({
-            ok:false
-        })
-    }
-}
-
-const createRegister =async(req,res=response) =>{
-    
-    const accountiD = process.env.ACCOUNT_SID
-    const authToken = process.env.AUTH_TOKEN
-
-    const {email,numbers,passwordone,passwordtwo} = req.body
-    
-    try {
-    
-    const Email = await usuario.findOne({email})
-    
-    if(Email){
-       return res.status(401).json({
-            ok:false,
-            msg:"elija otro correo este ya esta disponible"
-        })
-    }
-
-    const Numbers = await usuario.findOne({numbers})
-
-    if(Numbers){
-        return res.status(401).json({
-             ok:false,
-             msg:"elija otro numero este ya esta disponible "
-         })
-     }
-
-     if(passwordone !== passwordtwo){
-         return  res.status(401).json({
-             ok:false,
-             msg:"no coninciden la contraseña"
-         })
-     }
-    
-    let register =   usuario(req.body)
-    
-    let salt = bcryptjs.genSaltSync()
-    register.passwordone = bcryptjs.hashSync(passwordone,salt)
-    register.passwordtwo = bcryptjs.hashSync(passwordtwo,salt)
-    
-    const token  = await GeneratJTW(register.id,register.email)
-    const result  =await register.save()
-   
-    const user = "APIColombiared"
-    const password ="Colombiared100%"
-    
-    const total =  btoa(`${user}:${password}`)
-    const url = await 'http://api.messaging-service.com/sms/1/text/single';
-            const options = {
-                method: 'POST',
-                headers: {'Content-Type': 'application/json',
-                "Authorization":`Basic ${total}`
-                },
-                body: JSON.stringify({ to:`57${numbers}`,
-                text: `tu codigo  315455 `, 
-                from: `57${numbers}`})
-        };
-
-    await fetch(url, options)
-    .then(res => res.json())
-    .then(json => console.log(json))
-    .catch(err => console.error('error:' + err));
-
-    
-     res.status(201).json({
-            ok:true,
-            result:result,
-            token:token
-        })
-    
-    } catch (error) {
-        res.status(401).json({
-            ok:false
-        })
-    }
-}
-
-
-const uploadImage = async(req, res, next) =>{
-
-    
-    const {email,name} = req.body
-
-    try {
-
-        let product = new usuario({name})
-    
-        const findName  = await usuario.findOne({name})
-
-        if(findName){
-            return res.status(401).json({
-                ok:false,
-                msg:"elija otros nombre por favor"
-            })
-        }
-       
-
-        //rolando
-        const {filename} = req.file
-        
-        product.setImgUrl(filename)
-
-        //usuario.setImgUrl(filename)
-        
-        const to = await  product.save()
-
-        return  res.status(201).json({
-             ok:true,
-             results:to
-        })
-    } catch (error) {
-        res.status(401).json({
-            ok:false
-        })
-    }
-}
-
-const GetProduct = async(req,res=response) =>{
-
-    try {
-        const product = await usuario.find()
-
-        return res.status(201).json({
-            ok:true,
-            product
-        })
-    } catch (error) {
-        return res.status(401).json({
-            ok:false
-        })
-    }
-}
-
-const ValidTokenUser =async(req,res=response) =>{
-
-    const {numbers}  = req.body
-    
-    try {
-        const isLogin  = await usuario.findOne({numbers})
-
-        if(!isLogin){
-            return res.status(401).json({
-                ok:false,
-                msg:"el numero no esta registrado con este usuario"
-            })
-        }       
-    var val = Math.floor(1000 + Math.random() * 9000);
-
-    const user = "APIColombiared"
-    const password ="Colombiared100%"
-    
-    const total =  btoa(`${user}:${password}`)
-    const url = await 'http://api.messaging-service.com/sms/1/text/single';
-            const options = {
-                method: 'POST',
-                headers: {'Content-Type': 'application/json',
-                "Authorization":`Basic ${total}`
-                },
-                body: JSON.stringify({ to:`573202720874`,
-                text: `tu codigo  ${val} `, 
-                from: `573202720874`})
-        };
-        
-        await fetch(url, options)
-        .then(res => res.json())
-        .then(json => console.log(json))
-        .catch(err => console.error('error:' + err));
-
-        const token = await GeneratJTW(isLogin.id,isLogin.email)
-
-        res.status(201).json({
-            ok:true,
-            token:token,
-            code:val
-        })
-    } catch (error) {
-        res.status(401).json({
-            ok:false
-        })
-    }
-}
-
-const UpdatePassword  =async(req,res=response) =>{
-
-    const {numbers,passwordone,passwordtwo} = req.body
-    
-    try {
-        
-        const IsLogin = await usuario.findOne({passwordone})
-
-        if(!IsLogin){
+        if(!passs){
             return res.status(201).json({
-                ok:false,
-                msg:"no coninciden el numero de celular"
+                ok:true,
+                msg:"passowrd incorrecta"
             })
         }
-    
-        if(passwordone !== passwordtwo){
-            return res.status(401).json({
-                ok:false,
-                msg:"no coinciden las password"
-            })
-        }
-    
-    const {id} = IsLogin
-    
-    let salt = bcryptjs.genSaltSync()
-    const one = bcryptjs.hashSync(passwordone,salt)
-    const two = bcryptjs.hashSync(passwordtwo,salt)
 
-    const t={
-        passwordone:one,
-        passwordtwo:two
-    }
-    
-    await usuario.findByIdAndUpdate(
-        id,
-        {
-          $set: t,
-        },
-        { new: true }
-      );
-        
         res.status(201).json({
             ok:true,
-            msg:"passsword update"
+            token:1223213,
+            result:Islogin
         })
-
+        
     } catch (error) {
         
-        res.status(401).json({
-            ok:false,
-        })
     }
 }
-module.exports ={LoginUsuario,createRegister,uploadImage,GetProduct,ValidTokenUser,UpdatePassword}
+
+const userProduct= async(req,res=response) =>{   
+
+    const {id}  = req.params
+   
+    const query = await  pool.query("SELECT * FROM productos  where productos.cod_prod=?",[id])
+    
+    const t = query.map(index=>{
+        return index.cod_prod
+    })
+
+    const query2 = await  pool.query("SELECT * from detalle_prod_provee INNER JOIN proveedores ON detalle_prod_provee.id_provee = proveedores.cod_prov where detalle_prod_provee.id_prod =? ORDER BY costo_compra ASC   ",[t])
+
+    res.status(201).json({
+        ok:true,
+        result:{
+            query,
+            query2
+        }
+    })
+
+}
+
+
+
+const userProvedor =async(req,res=response) =>{
+
+    const {id}  = req.params
+
+    const query = await  pool.query("SELECT * FROM proveedores  where proveedores.cod_prov=?",[id])
+
+    const t = query.map(index =>{
+        return index.cod_prov
+    })
+
+    const query2 = await  pool.query("SELECT * from detalle_prod_provee INNER JOIN productos ON detalle_prod_provee.id_prod = productos.cod_prod where detalle_prod_provee.id_provee =? ORDER BY costo_compra ASC ",[t])
+
+    res.status(201).json({
+        ok:true,
+        query,
+        query2
+    })
+
+}
+
+const  inserProvedor =async(req,res=response) =>{
+
+    const {namecompany,namecolaborador,lastname,address,phone,dia_visita,dia_entraga} =req.body
+
+    const query1 = await  pool.query("SELECT MAX(cod_prov) as max FROM proveedores")
+    
+    const t  =query1.map(index  =>{
+        return index.max
+    })
+
+    const num =parseInt(t)+1
+
+    console.log(num)
+
+    const data={
+        cod_prov:num,
+        nom_prov:namecompany,
+        nom_colaborador:namecolaborador,
+        apell_colaborador:lastname,
+        direc:address,
+        tel:phone,
+        contraseña:"2313213321",
+        dia_visita:dia_visita,
+        dia_entrega:dia_entraga
+    }
+
+    const query2 =pool.query("INSERT INTO proveedores set ?", data,(err,customer) =>{
+        console.log(customer)
+    })
+
+    console.log(query2)
+
+    res.status(201).json({
+        ok:true
+    })
+
+}
+
+
+const inserProduct=async(req,res=response) =>{
+
+    const {nameproduct,codebarra,imagen,precioventa,costo_compra,checked} = req.body
+
+    const query1 = await  pool.query("SELECT MAX(cod_prod) as max FROM productos")
+    
+    const t  =query1.map(index  =>{
+        return index.max
+    })
+
+    const num =parseInt(t)+1
+
+    const data={
+        cod_prod:num,
+        nom_pro:nameproduct,
+        codigo_barra:codebarra,
+        imagen:imagen,
+        precio_venta:precioventa
+    }
+
+    const query2 =pool.query("INSERT INTO productos set ?", data,(err,customer) =>{
+        console.log(customer)
+    })
+
+    for(let i =0;i<checked.length;i++){
+        const cos = costo_compra[i]
+        const index  = checked[i]
+        console.log(index)
+        const to ={
+            id_provee:index,
+            id_prod:num,
+            costo_compra:cos,
+            costo_venta:precioventa
+        }
+
+    const query3 =pool.query("INSERT INTO detalle_prod_provee set ?", to,(err,customer) =>{
+        console.log(customer)
+    })
+
+    }  
+    
+   
+    res.status(201).json({
+        ok:true
+    })
+
+}
+
+
+const getProvedor=async(req,res=response) =>{
+
+    const query = await pool.query("SELECT nom_prov, cod_prov FROM proveedores")
+    
+    res.status(201).json({
+        ok:true,
+        result:query
+    })
+
+}
+
+const getProductos=async(req,res=response) =>{
+
+    const query = await pool.query("SELECT * FROM productos")
+    
+    res.status(201).json({
+        ok:true,
+        result:query
+    })
+
+}
+
+module.exports={userProduct,
+                userProvedor,
+                inserProvedor,
+                inserProduct,
+                userRegister,
+                userLogin,
+                getProvedor,
+                getProductos}

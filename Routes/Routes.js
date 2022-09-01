@@ -1,50 +1,22 @@
 const {Router} = require('express')
-const {check} = require('express-validator')
-const { LoginUsuario, createRegister, uploadImage, GetProduct, ValidTokenUser, UpdatePassword } = require('../Controller/ControllerUser')
-const { upload } = require('../lib/Storage')
-const { ValidarCampos } = require('../middleweres/middleaweares')
+const { userProduct, userProvedor, inserProvedor, inserProduct, userRegister, userLogin, getProvedor, getProductos } = require("../controller/ControllerUser")
 
 const router = Router()
 
-router.post('/login',
-    [
-        check('numbers','el numbers es obligatorio').isLength({min:9}),
-        check('passwordone','el passwordone es obligatorio').isLength({min:6}),
-        ValidarCampos
-    ],
+router.post("/register",userRegister)
 
-LoginUsuario)
+router.post("/login",userLogin)
 
-router.post('/register',
-    [
-        check('email','el email  es obligatorio').isEmail(),
-        check('numbers','el numero es obligatorio').isLength({min:9}),
-        check('passwordone','el passwordone es obligatorio').isLength({min:6}),
-        check('passwordtwo','el passwordtwo es obligatorio').isLength({min:6}),
-        ValidarCampos
-    ],
-    createRegister
-)
+router.get("/listmotel/:id",userProduct)
 
-router.post('/product',upload.single("image"),uploadImage)
+router.get("/listprovesor/:id",userProvedor)
 
-router.get('/product' ,GetProduct)
+router.post("/insertprovedores",inserProvedor)
 
-router.post("/validpassword", [
-        check('numbers','el numero  es obligatorio').isLength({min:9}),
-        ValidarCampos
-        ],
-    ValidTokenUser
-)
+router.post("/insertproduct",inserProduct)
 
-router.post("/updatepassword", 
-     [
-        check('passwordone','el passwordone es obligatorio').isLength({min:6}),
-        check('passwordtwo','el passwordtwo es obligatorio').isLength({min:6}),
-        ValidarCampos
-     ],
-      UpdatePassword
-)
+router.get("/getprovedor",getProvedor)
 
-//+19107824959
+router.get("/getproductos",getProductos)
+
 module.exports={router}

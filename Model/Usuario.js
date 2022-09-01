@@ -1,29 +1,28 @@
-const {Schema,model} = require('mongoose')
+const {Schema,model} = require("mongoose")
 
-const UsusuariSchema = Schema({
-     email:{
-        type:String,
-     },
-     numbers:{
-          type:String
-     },
-     passwordone:{
-          type:String,
-         },
-     passwordtwo:{
-          type:String,
-         },
-     username:{
-          type:String,
-         },
-     imgUrl:String,
+const User = Schema({
+    namecompany:{
+        type:String
+    },
+    namecolaborador:{
+       type:String,
+    },
+    lastname:{
+         type:String
+    },
+    address:{
+         type:String,
+        },
+    phone:{
+         type:String,
+        },
+    email:{
+         type:String,
+        },
+    password:{
+        type:String
+    },
+
 })
 
-UsusuariSchema.methods.setImgUrl= function setImgUrl (filename){
-     const host = process.env.HOST
-     const port = process.env.PORT
-     this.imgUrl = `https://quilify.herokuapp.com/public/${filename}`
-}
-
-module.exports= model('Usuario',UsusuariSchema)
-
+module.exports= model('User',User)
