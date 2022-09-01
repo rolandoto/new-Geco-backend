@@ -1,19 +1,12 @@
 const {Router} = require('express')
 const {check} = require('express-validator')
-const { LoginUsuario, createRegister, uploadImage, GetProduct, ValidTokenUser, UpdatePassword, getProductos } = require('../Controller/ControllerUser')
+const { userLogin, createRegister, uploadImage, GetProduct, ValidTokenUser, UpdatePassword, getProductos } = require('../Controller/ControllerUser')
 const { upload } = require('../lib/Storage')
 const { ValidarCampos } = require('../middleweres/middleaweares')
 
 const router = Router()
 
-router.post('/login',
-    [
-        check('numbers','el numbers es obligatorio').isLength({min:9}),
-        check('passwordone','el passwordone es obligatorio').isLength({min:6}),
-        ValidarCampos
-    ],
-
-LoginUsuario)
+router.post("/login",userLogin)
 
 router.post('/register',
     [

@@ -6,41 +6,38 @@ const btoa = require('btoa')
 const fetch = require("node-fetch")
 const { pool } = require('../database/connection')
 
-const LoginUsuario =async(req,res=response) =>{
+const userLogin =async(req,res=response) =>{
 
-    const {numbers,passwordone} = req.body
-    
-    try {
-        
-        const isLogin  = await usuario.findOne({numbers})
-        
-        if(!isLogin){
+    const {email,password} = req.body
+
+    try {   
+
+        const Islogin =  await user.findOne({email})
+
+        if(!Islogin){
             return res.status(401).json({
                 ok:false,
-                msg:"el usuario no esta registrado"
-            })
-        }
-        
-        const validPassword = bcryptjs.compareSync(passwordone,isLogin.passwordone)
-        
-        if(!validPassword){
-            return res.status(401).json({
-                ok:false,
-                msg:"password incorrecto"
+                msg:"correo no retgistrado"
             })
         }
 
-        const token = await GeneratJTW(isLogin.id,isLogin.email)
+        const passs = await user.findOne({password})
 
-        return res.status(201).json({
+        if(!passs){
+            return res.status(201).json({
+                ok:true,
+                msg:"passowrd incorrecta"
+            })
+        }
+
+        res.status(201).json({
             ok:true,
-            token:token
+            token:1223213,
+            result:Islogin
         })
-
+        
     } catch (error) {
-        res.status(401).json({
-            ok:false
-        })
+        
     }
 }
 
@@ -291,4 +288,4 @@ const getProductos=async(req,res=response) =>{
 
 }
 
-module.exports ={LoginUsuario,createRegister,uploadImage,GetProduct,ValidTokenUser,UpdatePassword,getProductos}
+module.exports ={userLogin,createRegister,uploadImage,GetProduct,ValidTokenUser,UpdatePassword,getProductos}
